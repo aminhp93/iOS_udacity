@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+  
+  <title>New Mockup</title>
+  <link rel="icon" href="https://assets.mybalsamiq.com/static/favicon-8177de7c26c9a844d218345397173032.ico"/>
+  <link rel="stylesheet" media="all" href="https://assets.mybalsamiq.com/static/jqueryui-myb1/jquery-ui-1.10.4.custom-37d8a8782071138076220198413bb4af.css"/>
+  <link rel="stylesheet" media="all" href="https://assets.mybalsamiq.com/static/common-6920147a7f97dad4890c1864cb732f97.css"/>
+  <script src="https://assets.mybalsamiq.com/static/bundles/base-a8ea5c7dcd9e6b9fd7147158e6ca6ea3.js" type="text/javascript" ></script>
+  
+  <meta name="layout" content="empty"/>
+  <meta charset="utf-8"/>
+
+  
+
+<link rel="stylesheet" href="https://assets.mybalsamiq.com/static/collateral/balsamiq.plugin.editor-29500388cf4df9b9fbe9361ef7fc3b55.css"/>
+<script src="https://assets.mybalsamiq.com/static/collateral/balsamiq.plugin.editor-1fd393a0013fca02ca5301835c826d9e.js" type="text/javascript" ></script>
+
+
+</head>
+<body>
+  
+<div id="notification" class="alert delete shadow hide">
+  <span class="ui-icon ctrl2 ctrl-xthick hide-notification close"></span>
+  <p id="notification-message"></p>
+</div>
+<div id="global-message-dialog" title="Warning!" class="hide">
+  <p id="global-message"></p>
+</div>
+
+
+
+  
+<div id="editor">Loading myBalsamiq editor...<a href="https://get.adobe.com/flashplayer/">Flash Player 11.2</a> or later required.</div>
+<div id="login-dialog" class="ui-dialog hide" title="You have been logged out, please log in again.">
+  <div class="ui-dialog-content">
+    <div class="form-panel">
+      <div class="form-cols">
+        <fieldset>
+          <div class="row">
+            <label>Username: *</label>
+            <div class="field">
+              <input type="text" id="login-dialog-username" name="username" value="johndavid9991" class="input full" disabled/>
+            </div>
+          </div>
+          <div class="row">
+            <label>Password: *</label>
+            <div class="field" id="pwdbox">
+              <input type="password" id="login-dialog-password" name="password" class="input full" />
+              <p style="text-align:right"><a href="/forgotpassword" class="forgot" target="_blank" rel="noreferrer">I forgot, help!</a></p>
+              <div><input type="checkbox" id="rememberMe" name="rememberMe" class="checkbox inline" tabindex="3"/>&nbsp;&nbsp;<label class="inline" for="rememberMe">Keep me logged in for 30 days.</label></div>
+            </div>
+          </div>
+          <div class="row-submit clear">
+            <input type="submit" id="login-dialog-submit" name="login" value="Log in" class="ui-button ui-widget ui-state-default ui-button-text-only ui-corner-all submit"/>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<div id="session-expired-dialog" title="Session Expired" class="hide">
+  <p>Please click OK to reload the page and continue using myBalsamiq</p>
+</div>
+<script>
+  $(function() {
+    var antiCsrfToken = 'eyJraWQiOiJrMSIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiJteWJhbHNhbWlxIiwiYXVkIjoibXliYWxzYW1pcS1hcGkiLCJleHAiOjE0ODM0MTM4MTQsImp0aSI6Ik5icWxOX3l5VG9NMDM4TkNKdTZTQ1EiLCJpYXQiOjE0ODM0MTI5MTQsIm5iZiI6MTQ4MzQxMjc5NCwicHJpbmNpcGFsIjoiam9obmRhdmlkOTk5MSIsInNlc3Npb25JZCI6IjE2RUVCRDdGMzEzODQ3NkJBRUZEQjJDOEVCQzQ2RTAyLW40In0.OsQyJpO2xKwQpozayccTi5pWjmNOpp0K0vbL6cUWmT3WASgv83d8j89HyzYpVCLP7nCZqeBwMwawjIkGTiQPbbNO0lBAOW_2VAz6y64vVpd0n-DMfYs1yEmDZFFM1ZsTRmIidBHX7YmLM0IVHOtls7lLpO2d2R52BpNsOZYw7DqkyaBSFrWpYeAZPr8FnouNdCyW8aFR5BPGKzKRUSaoNXbeOZRJisl8RgUJ2PCjQ3JtxBH5DuB3GL5M32TIQ1qSv_6_rnkiDoyjlAaz3k7pgcS9sadfBMg93Ycg-ix1pHWN16fbLbhCQc9AruYnpfjkN587G6U7NxzyaPzeOZaKeQ';
+
+    window.showSessionExpiredDialog = function() {
+      $('#session-expired-dialog').mybDialog({
+        dialogClass: 'no-close',
+        autoOpen: true,
+        width: 400,
+        modal: true,
+        buttons: {
+          Ok: function() {
+            window.location.reload(true);
+          }
+        }
+      });
+    };
+
+    window.getCsrfToken = function() {
+      return antiCsrfToken;
+    };
+
+    window.setCsrfToken = function(token) {
+      antiCsrfToken = token;
+    };
+
+    window.sendToken = function(xhr) {
+      if (antiCsrfToken !== undefined) {
+        xhr.setRequestHeader('X-Authorization', 'Bearer ' + antiCsrfToken);
+      }
+    };
+
+    // Refresh anti csrf token every minute
+    $(document).everyTime(1000 * 60 * 5, 'token-refresh', function() {
+      $.ajax({
+        type: "POST",
+        url: "/refresh",
+        beforeSend: function(xhr) {
+          sendToken(xhr);
+        }
+      }).done(function (data, textStatus, xhr) {
+        if (data.success) {
+          var header = xhr.getResponseHeader('X-Authorization');
+          if (header && header.substring(0, 7) === 'Bearer ') {
+            antiCsrfToken = header.substr(7);
+          }
+        } else {
+          showSessionExpiredDialog();
+          $(document).stopTime('token-refresh');
+        }
+      });
+    });
+  });
+</script>
+
+  <script src="https://assets.mybalsamiq.com/static/bundles/application-5e34f2186c54eb929a4697ab16010c8b.js" type="text/javascript" ></script>
+  <script >
+  function goBack() {
+    window.location = '/projects/airbnb_diagram';
+	}
+
+  function userLoggedOut() {
+      $('#login-dialog').mybDialog('open');
+  }
+
+  function uploadAsset(isProjectAsset, name, base64bytes) {
+    $.ajax({
+      type: "POST",
+      url: isProjectAsset ?
+        "https://codingdojo2013.mybalsamiq.com/projects/airbnb_diagram/assets/upload/editor" :
+        "https://codingdojo2013.mybalsamiq.com/assets/upload/editor",
+      data: {
+        name: name,
+        base64bytes: base64bytes
+      },
+      beforeSend: function(xhr) {
+        sendToken(xhr);
+      }
+    }).done(function(data) {
+      var swfEditor = bmse.getFlashMovie("editor");
+      swfEditor.onUploadAssetComplete(JSON.stringify(data));
+    });
+  }
+
+	var _editorTestPassed = false;
+	function editorTestPassed() {
+		_editorTestPassed = true;
+	}
+
+    var flashvars = {
+  
+    cfgURL: "https://codingdojo2013.mybalsamiq.com/projects/airbnb_diagram/editorcfg"
+  
+  };
+var params = {
+  allowFullScreen: "true",
+  allowscriptaccess: "always"
+};
+var attributes =  {};
+
+  swfobject.embedSWF("https://assets.mybalsamiq.com/static/mockups-web-85565534e2728ce5c24c6d68e21803fa.swf", "editor", "100%", "100%", "11.2.0", "https://assets.mybalsamiq.com/static/collateral/playerProductInstall-be332eb9be4b3dcfdcd757bbc6e495e5.swf", flashvars, params, attributes);
+  $('#login-dialog').mybDialog({
+    autoOpen: false,
+    height: 'auto',
+    width: 560,
+    modal: true,
+    zIndex: 100000,
+    draggable: false,
+    resizable: false
+  }).parent().find('a.ui-dialog-titlebar-close').hide().end();
+  $('#login-dialog-submit').click(function(e) {
+    e.preventDefault();
+    $.post('\u002fsignin',
+        {
+          username: $('#login-dialog-username').val(),
+          password: $('#login-dialog-password').val()
+        },
+        function (data) {
+          if (data.token) {
+            setCsrfToken(data.token);
+          }
+          if (data.success) {
+            $('#login-dialog').mybDialog('close');
+          }
+          if (data.message) {
+            showNotification(data.message);
+          }
+        }
+    );
+  });
+  $(document).on('LoggedIn.User', function(e) {
+    if (217943 == e.userId) {
+      $('#login-dialog').mybDialog('close');
+    }
+  }).on('LoggedOut.User', function(e) {
+    if (217943 == e.userId) {
+      $('#login-dialog').mybDialog('open');
+    }
+  });
+</script><script >
+$(function() {
+  var userMessageCookieOptions = {
+    path: '/',
+    domain: ".mybalsamiq.com",
+    secure: true,
+  };
+
+  function displayMessage(message, delay) {
+    var self = $('#notification');
+    self.queue(function(next) {
+      $('#notification-message').html(message);
+      self.css({left: '0px', opacity: 50}).position({ my: "center top", at: "center top", of: window });
+      next();
+    })
+    self.fadeIn('slow')
+    if (delay != undefined) {
+      self.delay(delay).fadeOut('slow', function() {
+        $('#notification-message').html('');
+      });
+    }
+  }
+
+  window.clearNotification = function() {
+    $('#notification').clearQueue().effect("drop", { direction: "up" }, function() {
+      $('#notification-message').html('');
+    });
+  };
+
+  window.showGlobalMessage = function(message) {
+    $('#global-message').html(message);
+    $('#global-message-dialog').mybDialog({
+        dialogClass: 'dialog-global',
+        autoOpen: true,
+        modal: true
+    });
+  };
+
+  window.clearGlobalMessage = function() {
+    $('#global-message').text('');
+    $('#global-message-dialog').mybDialog('close');
+  };
+
+  window.showNotification = function(message, delay) {
+    delay = delay || 5000;
+    if (message === undefined) {
+      var value = $.cookie('user-message');
+      if (value) {
+        try {
+          value = window.atob(value);
+          var json = $.parseJSON(value);
+          if (json.message) {
+            displayMessage(json.message, json.delay);
+          }
+        } finally {
+          $.removeCookie('user-message', userMessageCookieOptions);
+        }
+      }
+    } else {
+      displayMessage(message, delay);
+    }
+  };
+
+  window.showPermanentNotification = function(message) {
+    $('.hide-notification').hide();
+    showGlobalMessage(message);
+  };
+
+  window.prepareMessage = function(message, delay) {
+    if (message) {
+      delay = delay || 5000;
+      $.cookie(
+        'user-message',
+        btoa(JSON.stringify({message: message, delay: delay})),
+        userMessageCookieOptions);
+    }
+  }
+
+  $("#global-message-dialog").mybDialog({
+    autoOpen: false,
+    height: 'auto',
+    width: 420,
+    modal: true,
+    zIndex: 100000,
+    buttons: {
+      'Ok': function() {
+        $(this).mybDialog('close');
+      }
+    }
+  }).mybDialog("widget")
+      .find("button:contains('Ok')").addClass("submit");
+
+  $('.hide-notification').click(clearNotification);
+
+  showNotification();
+});
+</script>
+  <script>
+    $(function () {
+      // Handle instant message notification
+      $(document).bind('InstantMessage.Notification', function(event) {
+        showGlobalMessage(event.message);
+      }).bind('InstantMessage.ClearNotification', function() {
+        clearGlobalMessage();
+      });
+    });
+  </script>
+  
+<script src="https://cdn.pubnub.com/pubnub.min.js"></script>
+
+<script src="https://cdn.pubnub.com/pubnub-crypto.min.js"></script>
+
+<script>(function(){
+  window.turnOffPubnub = function() {
+    
+    pubnub.unsubscribe({channel:'prod-global,prod-site-81065,prod-private-217943'});
+    
+    
+  };
+  window.turnOnPubnub = function() {
+    
+    // Multiplexing (caution not working as well as regular subscribe)
+    pubnub.subscribe({channel:'prod-global,prod-site-81065,prod-private-217943',callback:pncb,connect:pbconnect,disconnect:pbdisconnect,reconnect:pbreconnect,error:pberror,restore:true});
+    
+    
+  };
+
+  var pncb = function(message) {
+    
+    var updateEvent = $.Event('*' + message.type.substring(message.type.indexOf('.')));
+    $.each(message, function(key, element) { if (key != 'type') updateEvent[key] = element; });
+    $(document).trigger(message).trigger(updateEvent);
+    if (typeof bmse != 'undefined') {
+      var swfEditor = bmse.getFlashMovie("editor");
+      if (typeof swfEditor != 'undefined' && typeof swfEditor.injectBeaconPushEvent != 'undefined' && (!('projectId' in message) || message.projectId == 637301)) {
+        swfEditor.injectBeaconPushEvent(JSON.stringify(message));
+      }
+    }
+  };
+  var pbconnect = function() {
+    
+    $(document).data('pubnub.connected', true);
+  };
+  var pbdisconnect = function() {
+    
+    $(document).data('pubnub.connected', false);
+  };
+  var pbreconnect = function() {
+    
+  };
+  var pberror = function() {
+    
+  };
+  var UUID = PUBNUB.db.get('session') || (function(){
+    var uuid = PUBNUB.uuid();
+    PUBNUB.db.set( 'session',uuid );
+    return uuid;
+  })();
+  
+  var pubnub = PUBNUB.init({
+    subscribe_key: 'sub-9fb603bd-2e69-11e2-8dab-e1ccdf778e8a',
+    uuid: UUID,
+    ssl: true
+  });
+  
+  turnOnPubnub();
+  // Turn off pubnub on form submit so we don't loose events
+  $(document).on('submit', 'form', turnOffPubnub).on('click', '.post-link', turnOffPubnub);
+})();</script>
+
+</body>
+</html>
