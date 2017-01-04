@@ -30,7 +30,7 @@ default:
 
 
 //: There are times when you don’t want any code to be executed if a certain case evaluates to true. For times like these, we can use __break__.
-var patienceLevel = "Low"
+var patienceLevel = "Medium"
 
 switch patienceLevel {
 case "Low":
